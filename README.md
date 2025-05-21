@@ -1,5 +1,7 @@
 # 🧠 The Lonely Prime: Tokenization, Embeddings & Visualization
 
+![Embedding Evolution](outputs/video/embedding_evolution.gif)
+
 This project explores how simple numeric facts (e.g., "2 is a prime number") can be used to train language models like Word2Vec and visualize how meaningful semantic structures emerge from training.
 
 We demonstrate this pipeline by:
@@ -63,12 +65,6 @@ outputs/
    - Prime vs. Composite  
    - Even vs. Odd  
    - Overlays with convex hulls
-
----
-
-## 📊 Example Visualization
-
-![Embedding Evolution](outputs/video/embedding_evolution.gif)
 
 ---
 
