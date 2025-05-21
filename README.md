@@ -64,6 +64,7 @@ outputs/
 ## 📊 Example Visualization
 
 ![Sample](outputs/pca_vector_vis/00000001.png)
+![Sample](outputs/pca_vector_vis/00000082.png)
 
 ---
 
