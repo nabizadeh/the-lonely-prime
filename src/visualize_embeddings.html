@@ -505,6 +505,32 @@ for (ep in epochs) {
   }
 }</code></pre>
 </div>
+<div id="generate-gif-animation-of-embedding-evolution" class="section level2">
+<h2>4. Generate GIF Animation of Embedding Evolution</h2>
+<p>This section creates an animated GIF that captures the evolution of
+word embeddings over training epochs. Using the <code>gifski</code>
+package, a sequence of PNG images generated from PCA-reduced Word2Vec
+vectors is compiled into a looping animation. The output GIF visually
+illustrates how semantic structures (e.g., clusters of prime, even, and
+odd numbers) emerge and stabilize during model training.</p>
+<pre class="r"><code>library(gifski)
+
+# Get full paths to the PNGs
+png_files &lt;- list.files(&quot;../outputs/pca_vector_vis/&quot;, pattern = &quot;\\.png$&quot;, full.names = TRUE)
+
+# Sort them in correct order
+png_files &lt;- png_files[order(png_files)]
+
+# Create GIF
+gifski(
+  png_files,
+  gif_file = &quot;../outputs/video/embedding_evolution.gif&quot;,
+  width = 800,
+  height = 600,
+  delay = 0.1  # seconds per frame
+)</code></pre>
+<pre><code>## [1] &quot;../outputs/video/embedding_evolution.gif&quot;</code></pre>
+</div>
 
 
 
