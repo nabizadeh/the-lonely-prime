@@ -1,0 +1,159 @@
+---
+title: "Tokenizer Visualization"
+date: "2025-02-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# Set default chunk options
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1. Prime Number Utility and Color Generator
+
+```{r}
+# Function to generate distinct colors
+generate_colors <- function(n) {
+  colors <- grDevices::rainbow(n)
+  return(colors)
+}
+
+# Function to check if a number is prime
+is_prime <- function(n) {
+  if (n <= 1) return(FALSE)
+  if (n == 2) return(TRUE)
+  if (n %% 2 == 0) return(FALSE)
+
+  max_check <- floor(sqrt(n))
+  if (max_check >= 3) {
+    for (i in seq(3, max_check, by = 2)) {
+      if (n %% i == 0) return(FALSE)
+    }
+  }
+  return(TRUE)
+}
+```
+
+## 2. Load and Normalize Embedding Coordinates Over Epochs
+
+```{r}
+library(png)    # For reading PNG images
+library(jpeg)   # For reading JPEGs if needed
+library(ggplot2)
+library(dplyr)
+
+# Define numbers of interest (1 to 100)
+words_of_interest <- as.character(1:100)
+
+# Storage for mirror detection
+x_mirror_stamps <- c()
+y_mirror_stamps <- c()
+epochs <- c()
+
+# Clear previous data if it exists
+if (exists('all_epochs_df')) rm(all_epochs_df)
+
+# Loop through embedding CSVs for each epoch
+for (ep in 1:5000) {
+  fdir <- paste0('../outputs/pca_vectors/word_embeddings_', ep, '.csv')
+  if (file.exists(fdir)) {
+    epochs <- c(epochs, ep)
+    df <- read.csv(fdir)
+    df <- df[df$word %in% words_of_interest, ]
+    df <- df[order(df$word), ]
+    df$epoch <- ep
+
+    # Normalize coordinates
+    df$x <- (df$x - min(df$x)) / (max(df$x) - min(df$x)) - 0.5
+    df$y <- (df$y - min(df$y)) / (max(df$y) - min(df$y)) - 0.5
+
+    # Check for axis mirroring by comparing to previous epoch
+    if (exists("all_epochs_df")) {
+      x_mirror <- FALSE
+      y_mirror <- FALSE
+      n_rows <- nrow(df)
+      for (i in 1:n_rows) {
+        x.new <- df$x[i]
+        x.old <- all_epochs_df$x[nrow(all_epochs_df) - (n_rows - i)]
+        y.new <- df$y[i]
+        y.old <- all_epochs_df$y[nrow(all_epochs_df) - (n_rows - i)]
+        if (abs(x.old - x.new) > 0.5) x_mirror <- TRUE
+        if (abs(y.old - y.new) > 0.5) y_mirror <- TRUE
+        if (x_mirror & y_mirror) break
+      }
+      if (x_mirror) x_mirror_stamps <- c(x_mirror_stamps, ep)
+      if (y_mirror) y_mirror_stamps <- c(y_mirror_stamps, ep)
+      all_epochs_df <- df
+    } else {
+      all_epochs_df <- df
+    }
+  }
+}
+```
+
+## 3. Generate and Save Word Embedding Visualizations
+
+```{r}
+# Sort epochs
+epochs <- sort(epochs)
+
+x_mirror <- FALSE
+y_mirror <- FALSE
+plot_num <- 1
+
+for (ep in epochs) {
+  fdir <- paste0('../outputs/pca_vectors/word_embeddings_', ep, '.csv')
+  if (file.exists(fdir)) {
+    df <- read.csv(fdir)
+    df <- df[df$word %in% words_of_interest, ]
+
+    # Normalize positions
+    df$x <- (df$x - min(df$x)) / (max(df$x) - min(df$x)) - 0.5
+    df$y <- (df$y - min(df$y)) / (max(df$y) - min(df$y)) - 0.5
+
+    # Assign visual markers
+    df$shape <- 15
+    df$color <- "blue"
+    for (i in 1:nrow(df)) {
+      if (as.integer(df$word[i]) %% 2 == 1) df$shape[i] <- 17
+      if (is_prime(as.integer(df$word[i]))) df$color[i] <- "orange"
+    }
+
+    # Apply axis mirroring if detected
+    if (ep %in% x_mirror_stamps) x_mirror <- !x_mirror
+    if (ep %in% y_mirror_stamps) y_mirror <- !y_mirror
+    if (x_mirror) df$x <- -df$x
+    if (y_mirror) df$y <- -df$y
+
+    # Tag categories
+    df$tag <- "Even & Composite"
+    df$tag[df$shape == 15 & df$color == 'orange'] <- "Even & Prime"
+    df$tag[df$shape == 17 & df$color == 'blue'] <- "Odd & Composite"
+    df$tag[df$shape == 17 & df$color == 'orange'] <- "Odd & Prime"
+
+    # Convex hull to outline each cluster
+    get_hull <- function(df) df[chull(df$x, df$y), ]
+    hulls <- do.call(rbind, lapply(split(df, df$tag), get_hull))
+
+    # Create plot
+    p.title <- paste0('Word2Vec - Epoch ', ep)
+    p <- ggplot(df, aes(x = x, y = y, color = tag)) +
+      geom_polygon(data = hulls, aes(fill = tag, group = tag), alpha = 0.2, color = NA) +
+      geom_point() +
+      theme_minimal() +
+      theme(
+        panel.background = element_rect(fill = "white", color = NA),
+        plot.background = element_rect(fill = "white", color = NA)
+      ) +
+      labs(x = "PCA Component 1", y = "PCA Component 2", title = p.title)
+
+    # Save plot (x times per epoch for smoother animation or backup)
+    for (dummy_iterator in 1:1) {
+      plot_num_str <- sprintf("%08d", plot_num)
+      plot_name <- paste0("../outputs/pca_vector_vis/", plot_num_str, ".png")
+      ggsave(plot_name, plot = p, bg = "white", width = 8, height = 6, dpi = 300)
+      plot_num <- plot_num + 1
+    }
+  }
+}
+```

@@ -1,0 +1,8 @@
+# R dependencies for visualization
+# Use `install.packages()` for CRAN packages and `BiocManager::install()` for Bioconductor if needed
+
+# Base R packages
+ggplot2
+dplyr
+png
+jpeg
