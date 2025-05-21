@@ -88,6 +88,24 @@ outputs/
 
 ---
 
+## 📦 Dependency Installation
+
+### Python Dependencies
+To install all required Python packages, run the following command from the project root:
+
+```bash
+pip install -r requirements.txt
+```
+
+### R Dependencies
+To install the required R packages, run the following command in your terminal:
+
+```bash
+Rscript -e 'pkgs <- readLines("R_requirements.txt"); install.packages(sub("==.*", "", pkgs))'
+```
+
+---
+
 ## 📎 Related Topics
 
 - NLP tokenization
