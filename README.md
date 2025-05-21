@@ -15,17 +15,22 @@ We demonstrate this pipeline by:
 ## 📁 Project Structure
 
 ```
+data/
+├── numbers.txt                       # Training data
+
 notebooks/
 ├── training_and_visualization.ipynb  # Main Jupyter notebook (Python)
 
 src/
 ├── visualize_embeddings.Rmd          # R Markdown for embedding visualization
-
-pca_vectors/
-├── word_embeddings_*.csv             # Word2Vec embeddings at multiple epochs
+├── utils.py                          # Helper functions to generate training set
 
 outputs/
+├── models/                           # word2vec models
 ├── pca_vector_vis/                   # Visualized PNGs from each epoch
+├── pca_vectors/                      # PCA vectors from each epoch
+├── video/                            # Visualized gif from all epochs
+
 ```
 
 ---
@@ -63,8 +68,6 @@ outputs/
 
 ## 📊 Example Visualization
 
-![Sample](outputs/pca_vector_vis/00000001.png)
-![Sample](outputs/pca_vector_vis/00000082.png)
 ![Embedding Evolution](outputs/video/embedding_evolution.gif)
 
 ---
